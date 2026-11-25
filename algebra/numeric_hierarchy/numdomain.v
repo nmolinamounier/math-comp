@@ -2132,6 +2132,8 @@ Proof. by rewrite -real_normrEsign. Qed.
 End RealDomainTheory.
 
 #[global] Hint Resolve num_real : core.
+#[global] Hint Extern 0 (is_true (_ \is real)) =>
+  solve [apply: num_real] : core.
 
 Section RealDomainOperations.
 
