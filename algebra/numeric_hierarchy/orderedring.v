@@ -32,9 +32,41 @@ HB.mixin Record Ring_isPOrdered R & POrderRing R := {
 HB.structure Definition POrderedRing :=
   { R of POrderRing R & Ring_isPOrdered R & Num.POrderedZmodule R }.
 
+#[short(type="numRingType")]
+HB.structure Definition NumRing :=
+  { R of POrderedRing R & NumZmodule R}.
+
 #[short(type="orderedRingType")]
 HB.structure Definition OrderedRing :=
-  { R of OrderRing R & Ring_isPOrdered R & Num.OrderedZmodule R}.
+  { R of NumRing R & Num.OrderedZmodule R}.
+
+#[short(type="porderedIdomainType")]
+HB.structure Definition POrderedIntegralDomain :=
+  { R of POrderedRing R & GRing.IntegralDomain R }.
+
+#[short(type="numIdomainType")]
+HB.structure Definition NumIntegralDomain :=
+  { R of NumRing R & GRing.IntegralDomain R }.
+
+#[short(type="orderedIdomainType")]
+HB.structure Definition OrderedIntegralDomain :=
+  { R of OrderedRing R & GRing.IntegralDomain R }.
+
+HB.factory Record Ring_isOrdered R & OrderRing R := {
+  ler_wD2l : forall x : R, {homo +%R x : y z / (y <= z)%O};
+  mulr_ge0 : forall x y : R, x >= 0 -> y >= 0 -> x * y >= 0;
+  ler01 : 0 <= 1 :> R
+}.
+HB.builders Context R & Ring_isOrdered R.
+
+Let comp_trans : transitive (>=<%R : rel R).
+Proof. by []. Qed. 
+
+HB.instance Definition _ := Add_isHomo.Build R ler_wD2l.
+HB.instance Definition _ := POrderedZmodule_hasTransCmp.Build R comp_trans.
+HB.instance Definition _ := Ring_isPOrdered.Build R mulr_ge0 ler01.
+
+HB.end.
 
 Module OrderedRingExports.
 Bind Scope ring_scope with
@@ -57,7 +89,109 @@ End Def.
 
 Notation sg := sgr.
 
+Module Import Internals.
+
+Section pordered_ring.
+Context (R : porderedRingType).
+
+Lemma mulr_ge0_le0 (x y : R) : 0 <= x -> y <= 0 -> x * y <= 0.
+Proof.
+by rewrite -oppr_ge0 => /mulr_ge0 /[apply]; rewrite mulrN oppr_ge0.
+Qed.
+
+Lemma mulr_le0_ge0 (x y : R) : x <= 0 -> 0 <= y -> x * y <= 0.
+Proof.
+by rewrite -oppr_ge0 => /mulr_ge0 /[apply]; rewrite mulNr oppr_ge0.
+Qed.
+
+Lemma mulr_le0 (x y : R) : x <= 0 -> y <= 0 -> 0 <= x * y.
+Proof.
+by rewrite -!oppr_ge0 => /mulr_ge0 /[apply]; rewrite mulrNN.
+Qed.
+
+Fact nneg_mulr_closed : mulr_closed (@nneg R).
+Proof.
+by split=> [|x y]; [ rewrite nnegrE ler01 | exact: mulr_ge0 ].
+Qed.
+#[export]
+HB.instance Definition _ := GRing.isMulClosed.Build R nneg_num_pred
+  nneg_mulr_closed.
+
+Fact real_mulr_closed : mulr_closed (@real R).
+Proof.
+split=> [|x y]; first by rewrite realE ler01.
+rewrite !realE => /orP[] x0 /orP[] y0; apply/orP.
+- by left; apply: mulr_ge0.
+- by right; apply: mulr_ge0_le0.
+- by right; apply: mulr_le0_ge0.
+- by left; apply: mulr_le0.
+Qed.
+#[export]
+HB.instance Definition _ := GRing.isMulClosed.Build R real_num_pred
+  real_mulr_closed.
+
+End pordered_ring.
+
+Section pordered_idomain.
+Context (R : porderedIdomainType).
+
+Lemma ltr01 : 0 < 1 :> R.
+Proof. by rewrite lt_def oner_neq0 ler01. Qed.
+
+Lemma mulr_gt0 (x y : R) : x > 0 -> y > 0 -> x * y > 0.
+Proof.
+rewrite !lt_def => /andP[xne0 x0] /andP[yne0 y0].
+by rewrite mulr_ge0 // andbT mulf_neq0.
+Qed.
+
+Lemma invr_gt0 (x : R) : (0 <= x^-1) = (0 <= x).
+Proof.
+case: (boolP (x \is a GRing.unit)) => [xu|/invr_out -> //].
+apply/idP/idP.
+Search GRing.inv 0.
+
+Fact pos_mulr_closed : divr_closed (@pos R).
+Proof.
+split=> [|x y]; rewrite ?posrE ?ltr01 //.
+move=> x0 y0.
+rewrite lt_def mulr_ge0.
+rewrite lt_def mulr_ge0 ?ltW // andbT.
+by rewrite mulf_neq0 ?gt_eqF.
+Qed.
+#[export]
+HB.instance Definition _ := GRing.isMulClosed.Build R pos_num_pred
+  pos_mulr_closed.
+
+
+
+Fact pos_divr_closed : divr_closed (@pos R).
+Proof.
+split=> [|x y x_gt0 y_gt0]; rewrite posrE ?ltr01 //.
+have [Uy|/invr_out->] := boolP (y \is a GRing.unit); last by rewrite pmulr_rgt0.
+by rewrite -(pmulr_rgt0 _ y_gt0) mulrC divrK.
+Qed.
+#[export]
+HB.instance Definition _ := GRing.isDivClosed.Build R pos_num_pred
+  pos_divr_closed.
+
+End pordered_idomain.
+
+Lemma num_real (R : orderedRingType) (x : R) : x \is real.
+Proof. exact: le_total. Qed.
+
+Module Exports. HB.reexport. End Exports.
+
+End Internals.
+
+Module PredInstances.
+
+Export Internals.Exports.
+
+End PredInstances.
+
 Module Theory.
+
+Export Num.Theory.
 
 Section pordered_theory.
 Context (R : porderedRingType).
@@ -164,27 +298,6 @@ Proof. by move=> x_le0 y_le0; rewrite -(mulr0 x) ler_wpM2l. Qed.
 
 Lemma mulr_le0_ge0 x y : x <= 0 -> 0 <= y -> x * y <= 0.
 Proof. by move=> x_le0 y_le0; rewrite -(mulr0 x) ler_wnM2l. Qed.
-
-Fact nneg_mulr_closed : mulr_closed (@nneg R).
-Proof.
-by split=> [|x y]; [ rewrite nnegrE | exact: mulr_ge0 ].
-Qed.
-#[export]
-HB.instance Definition _ := GRing.isMulClosed.Build R nneg_num_pred
-  nneg_mulr_closed.
-
-Fact real_mulr_closed : mulr_closed (@real R).
-Proof.
-split=> [|x y]; first by rewrite realE ler01.
-rewrite !realE => /orP[] x0 /orP[] y0; apply/orP.
-- by left; apply: mulr_ge0.
-- by right; apply: mulr_ge0_le0.
-- by right; apply: mulr_le0_ge0.
-- by left; apply: mulr_le0.
-Qed.
-#[export]
-HB.instance Definition _ := GRing.isMulClosed.Build R real_num_pred
-  real_mulr_closed.
 
 Lemma real1 : 1 \is @real R. Proof. exact: rpred1. Qed.
 #[local] Hint Resolve real1 : core.
@@ -494,4 +607,6 @@ Hint Extern 0 (is_true (@Order.lt ring_display _ _ _)) =>
 
 End Theory.
 
+Module Exports. HB.reexport. End Exports.
 End Num.
+Export Num.Exports Num.Syntax Num.PredInstances.
