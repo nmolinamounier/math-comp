@@ -31,8 +31,6 @@ From mathcomp Require Import orderedzmod orderedring.
 (*                                                                            *)
 (* Over these structures, we have the following operations:                   *)
 (*             `|x| == norm of x                                              *)
-(*         Num.sg x == sign of x: equal to 0 iff x = 0, to 1 iff x > 0, and   *)
-(*                     to -1 in all other cases (including x < 0)             *)
 (*                                                                            *)
 (* - list of prefixes :                                                       *)
 (*   p : positive                                                             *)
@@ -767,6 +765,9 @@ Proof.
 by move=> xR; rewrite ger0_def eq_sym; apply: leif_eq; rewrite real_ler_norm.
 Qed.
 
+Lemma lteif_nnormr C x y : y < 0 ?<= if ~~ C -> (`|x| < y ?<= if C) = false.
+Proof. by case: C => ?; rewrite /= lter_nnormr. Qed.
+
 Lemma real_lteif_norml C x y :
   x \is Num.real ->
   (`|x| < y ?<= if C) = ((- y < x ?<= if C) && (x < y ?<= if C)).
@@ -1004,6 +1005,9 @@ Proof. by case: C; rewrite /= lter_normr. Qed.
 Lemma lteif_distl C x y e :
   (`|x - y| < e ?<= if C) = (y - e < x ?<= if C) && (x < y + e ?<= if C).
 Proof. by case: C; rewrite /= lter_distl. Qed.
+
+Lemma sqr_norm_eq1 x : (x ^+ 2 == 1) = (`|x| == 1).
+Proof. by rewrite sqrf_eq1 eqr_norml ler01 andbT. Qed.
 
 Section MinMax.
 

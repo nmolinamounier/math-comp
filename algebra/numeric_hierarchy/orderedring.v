@@ -5,6 +5,61 @@ From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq choice.
 From mathcomp Require Import fintype bigop finset fingroup nmodule order.
 From mathcomp Require Import rings_modules_and_algebras divalg orderedzmod.
 
+(******************************************************************************)
+(*                Ordered ring structures (orderedring.v)                     *)
+(*                                                                            *)
+(* NB: See CONTRIBUTING.md for an introduction to HB concepts and commands.   *)
+(*                                                                            *)
+(* NB: The header of ssrnum.v explains how to use the files in this directory.*)
+(*                                                                            *)
+(* This file defines the following ordered ring structures:                   *)
+(*                                                                            *)
+(*         porderRingType == join of Order.POrder and GRing.Ring              *)
+(*                           The HB class is called POrderRing.               *)
+(*          orderRingType == join of Order.Order and GRing.Ring               *)
+(*                           The HB class is called OrderRing.                *)
+(*       porderedRingType == porderRingType such that a product of            *)
+(*                           nonnegative elements is nonnegative.             *)
+(*                           The HB class is called POrderedRing.             *)
+(*     porderedNzRingType == join of POrderedRing and GRing.NzRing.           *)
+(*                           The HB class is called POrderedNzRing.           *)
+(*        orderedRingType == orderRingType such that a product of             *)
+(*                           nonnegative elements is nonnegative.             *)
+(*                           The HB class is called OrderedRing.              *)
+(* strictPOrderedRingType == porderNzRingType such that a product of          *)
+(*                           positive elements is positive.                   *)
+(*                           The HB class is called StrictPOrderedRing.       *)
+(*            numRingType == strictPOrderedRingType such that the real line   *)
+(*                           is totally ordered and if any two of x, y, x * y *)
+(*                           are real, then the third one is real as well.    *)
+(*                           The HB class is called NumRing.                  *)
+(*  strictOrderedRingType == orderNzRingType such that a product of           *)
+(*                           positive elements is positive.                   *)
+(*                           The HB class is called StrictOrderedRing.        *)
+(*    porderedIdomainType == join of StrictPOrderedRing and                   *)
+(*                           GRing.IntegralDomain.                            *)
+(*                           The HB class is called POrderedIntegralDomain.   *)
+(*         numIdomainType == join of NumRing and GRing.IntegralDomain.        *)
+(*                           The HB class is called NumIntegralDomain.        *)
+(*     orderedIdomainType == join of StrictOrderedRing and                    *)
+(*                           GRing.IntegralDomain.                            *)
+(*                           The HB class is called OrderedIntegralDomain.    *)
+(*                                                                            *)
+(* Over these structures, we have the following operations:                   *)
+(*         Num.sg x == sign of x: equal to 0 iff x = 0, to 1 iff x > 0, and   *)
+(*                     to -1 in all other cases (including x < 0)             *)
+(*                                                                            *)
+(* - list of prefixes :                                                       *)
+(*   p : positive                                                             *)
+(*   n : negative                                                             *)
+(*   sp : strictly positive                                                   *)
+(*   sn : strictly negative                                                   *)
+(*   i : interior = in [0, 1] or ]0, 1[                                       *)
+(*   e : exterior = in [1, +oo[ or ]1; +oo[                                   *)
+(*   w : non strict (weak) monotony                                           *)
+(*                                                                            *)
+(******************************************************************************)
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -751,6 +806,8 @@ move=> x0; elim: n => [|n IH]; first by rewrite expr0 ltr01.
 by rewrite exprS mulr_gt0.
 Qed.
 
+Definition exprn_gte0 := (@exprn_ge0 R, exprn_gt0).
+
 Lemma ltr_pM2lW x : 0 < x -> {homo *%R x : x y / x < y}.
 Proof. by move=> x0 y z yz; rewrite -subr_gt0 -mulrBr mulr_gt0 // subr_gt0. Qed.
 
@@ -942,6 +999,10 @@ Proof. by case: n => // n hx; rewrite pmulrn_lgt0. Qed.
 Lemma mulrn_wlt0 x n : x < 0 -> (x *+ n < 0) = (0 < n)%N.
 Proof. by case: n => // n hx; rewrite pmulrn_llt0. Qed.
 
+#[deprecated(since="mathcomp 2.4.0", use=mulrn_wgt0)]
+Lemma pmulrn_rgt0 x n : 0 < x -> (0 < x *+ n) = (0 < n)%N.
+Proof. exact: mulrn_wgt0. Qed.
+
 Lemma pmulrn_rlt0 x n : 0 < x -> (x *+ n < 0) = false.
 Proof. by move=> x_gt0; rewrite -(mulr0n x) ltr_pMn2l. Qed.
 
@@ -1028,6 +1089,16 @@ Qed.
 
 Definition lter_eXnr := (@ler_eXnr R, ltr_eXnr).
 Definition lter_Xnr := (lter_iXnr, lter_eXnr).
+
+Lemma ieexprn_weq1 x n : 0 <= x -> (x ^+ n == 1) = ((n == 0) || (x == 1)).
+Proof.
+move=> xle0; case: n => [|n]; first by rewrite expr0 eqxx.
+have : x >=< 1 by rewrite real_comparable ?ger0_real.
+case/comparable_ltgtP; do ?by rewrite ?ger0_real.
++ by move=> x_lt1; rewrite 1?lt_eqF // exprn_ilt1.
++ by move=> x_lt1; rewrite 1?gt_eqF // exprn_egt1.
+by move->; rewrite expr1n eqxx.
+Qed.
 
 Lemma ieexprIn x : 0 < x -> x != 1 -> injective (GRing.exp x).
 Proof.
@@ -1458,6 +1529,9 @@ Proof. by move=> hy; rewrite -{1}[y]mul1r ler_nM2r. Qed.
 
 Lemma ler_nMr x y : y < 0 -> (y <= y * x) = (x <= 1).
 Proof. by move=> hy; rewrite -{1}[y]mulr1 ler_nM2l. Qed.
+
+Lemma lerMn2r n x y : (x *+ n <= y *+ n) = ((n == 0) || (x <= y)).
+Proof. by case: n => [|n]; rewrite ?lexx ?eqxx // ler_pMn2r. Qed.
 
 (* ler and ^-1 *)
 
