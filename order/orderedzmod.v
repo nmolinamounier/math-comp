@@ -10,12 +10,15 @@ From mathcomp Require Import total_order total_order_instances.
 (*                                                                            *)
 (* NB: See CONTRIBUTING.md for an introduction to HB concepts and commands.   *)
 (*                                                                            *)
+(* NB: The header of ssrnum.v explains how to use the files in this directory.*)
+(*                                                                            *)
 (* This file defines the following number structures:                         *)
 (*                                                                            *)
 (*    porderNmodType == join of Order.POrder and GRing.Nmodule                *)
 (*                      The HB class is called POrderNmodule.                 *)
 (*    porderZmodType == join of Order.POrder and GRing.Zmodule                *)
-(*                      The HB class is called POrderZmodule.                 *)(*     orderNmodType == join of Order.Total and GRing.Nmodule                 *)
+(*                      The HB class is called POrderZmodule.                 *)
+(*     orderNmodType == join of Order.Total and GRing.Nmodule                 *)
 (*                      The HB class is called POrderNmodule.                 *)
 (*     orderZmodType == join of Order.Total and GRing.Zmodule                 *)
 (*                      The HB class is called POrderZmodule.                 *)
@@ -740,14 +743,12 @@ Proof.
 by move=> xle0 m n hmn /=; rewrite -lerN2 -!mulNrn ler_wpMn2l // oppr_cp0.
 Qed.
 
+(* TODO negative versions *)
 Lemma mulrn_lgt0 x n : (0 < n)%N -> (0 < x) -> (0 < x *+ n).
 Proof.
 move=> + xgt0; elim: n => // n IHn _; rewrite mulrS (lt_le_trans xgt0)// lerDl.
 by case: n IHn => // n /(_ _)/ltW->.
 Qed.
-
-Lemma mulrn_llt0 x n : (0 < n)%N -> (x < 0) -> (x *+ n < 0).
-Proof. by rewrite -!oppr_gt0 -mulNrn; exact: mulrn_lgt0. Qed.
 
 Lemma pmulrIn x : x > 0 -> injective (Algebra.natmul x).
 Proof.
