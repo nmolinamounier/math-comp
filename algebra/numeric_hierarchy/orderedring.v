@@ -222,7 +222,7 @@ Notation sg := sgr.
 Module Import Internals.
 
 Section pordered_ring.
-Context {R : porderedRingType}.
+Variable R : porderedRingType.
  
 Lemma mulr_ge0_le0 (x y : R) : 0 <= x -> y <= 0 -> x * y <= 0.
 Proof.
@@ -263,7 +263,7 @@ HB.instance Definition _ := GRing.isMulClosed.Build R real_num_pred
 End pordered_ring.
 
 Section strict_pordered_ring.
-Context {R : strictPOrderedRingType}.
+Variable R : strictPOrderedRingType.
 
 Lemma ltr01 : 0 < 1 :> R.
 Proof. by rewrite lt_def oner_neq0 ler01. Qed.
@@ -279,7 +279,7 @@ HB.instance Definition _ := GRing.isMulClosed.Build R pos_num_pred
 End strict_pordered_ring.
 
 Section num_idomain.
-Context {R : numIdomainType}.
+Variable R : numIdomainType.
 
 Fact real_semiring_closed : semiring_closed (@real R).
 Proof. by split; [exact: rpred0D|exact: rpred1M]. Qed.
@@ -350,7 +350,7 @@ Module Theory.
 Export Num.Theory.
 
 Section pordered_theory.
-Context {R : porderedRingType}.
+Variable R : porderedRingType.
 Implicit Types x y : R.
 
 Definition ler01 := @ler01 R.
@@ -621,7 +621,7 @@ Hint Extern 0 (is_true (@Order.le ring_display _ _ _)) =>
   solve [apply: ler01 | apply: ler0n | apply: lerN10] : core.
 
 Section nzpordered_theory.
-Context {R : porderedNzRingType}.
+Variable R : porderedNzRingType.
 Implicit Types x y : R.
 
 Lemma ltr01 : 0 < 1 :> R.
@@ -774,19 +774,15 @@ Proof. by rewrite gt_eqF // natr_indexg_gt0. Qed.
 End FinGroup.
 
 End nzpordered_theory.
-Arguments ler_nat : clear implicits.
-Arguments ltr_nat : clear implicits.
-Arguments pnatr_eq0 : clear implicits.
-Arguments pchar_num : clear implicits.
-Arguments eqr_nat : clear implicits.
 Arguments ltr01 {R}.
+Arguments signr_inj {R} [x1 x2].
 #[global] Hint Extern 0 (is_true (@Order.lt ring_display _ _ _)) =>
   solve [apply: ltr01 | apply: ltr0Sn | apply: ltrN10] : core.
 #[global] Hint Extern 0 (is_true (_%:R \is real)) => apply: realn : core.
 #[global] Hint Extern 0 (is_true (1 \is real)) => apply: real1 : core.
 
 Section strictpordered_theory.
-Context {R : strictPOrderedRingType}.
+Variable R : strictPOrderedRingType.
 Implicit Types x y : R.
 
 Definition mulr_gt0 x y := @mulr_gt0 R x y.
@@ -922,7 +918,7 @@ Qed.
 End strictpordered_theory.
 
 Section numring_theory.
-Context {R : numRingType}.
+Variable R : numRingType.
 Implicit Types x y z : R.
 
 Definition realMr x y := @realMr R x y.
@@ -1360,8 +1356,11 @@ Proof. by move=> xr yr; apply/comparable_BSide_max/real_comparable. Qed.
 
 End numring_theory.
 
+Arguments ler_sqr {R} [x y].
+Arguments ltr_sqr {R} [x y].
+
 Section strictorderedring_theory.
-Context {R : strictOrderedRingType}.
+Variable R : strictOrderedRingType.
 Implicit Types x y z t : R.
 
 (* sign *)
@@ -1387,7 +1386,7 @@ End strictorderedring_theory.
 #[global] Hint Resolve num_real : core.
 
 Section porderedidomain_theory.
-Context {R : porderedIdomainType}.
+Variable R : porderedIdomainType.
 Implicit Types x y : R.
 
 Lemma pmulrnI n : (0 < n)%N -> injective ((@GRing.natmul R)^~ n).
@@ -1430,7 +1429,7 @@ Definition miditv (i : interval R) : R :=
 End porderedidomain_theory.
 
 Section numidomain_theory.
-Context {R : numIdomainType}.
+Variable R : numIdomainType.
 Implicit Types x y : R.
 
 Lemma pmulr_rge0 x y : 0 < x -> (0 <= x * y) = (0 <= y).
@@ -1783,7 +1782,7 @@ Qed.
 End numidomain_theory.
 
 Section orderedidomain_theory.
-Context {R : orderedIdomainType}.
+Variable R : orderedIdomainType.
 
 Implicit Types x y z t : R.
 Let numR_real := @num_real R.
