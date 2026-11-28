@@ -1792,7 +1792,7 @@ Qed.
 End numidomain_theory.
 
 Arguments invr_gt0 : clear implicits.
-Arguments lerM2r {R}.
+Arguments lerMn2r {R}.
 
 Section orderedidomain_theory.
 Context {R : orderedIdomainType}.
