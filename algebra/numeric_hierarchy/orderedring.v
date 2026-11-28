@@ -616,6 +616,8 @@ Lemma num_real (R : orderedRingType) (x : R) : x \is real.
 Proof. exact: num_real. Qed.
 Hint Resolve num_real : core.
 
+Arguments ler0n : clear implicits.
+
 Arguments ler01 {R} : rename.
 Hint Extern 0 (is_true (@Order.le ring_display _ _ _)) =>
   solve [apply: ler01 | apply: ler0n | apply: lerN10] : core.
@@ -774,11 +776,13 @@ Proof. by rewrite gt_eqF // natr_indexg_gt0. Qed.
 End FinGroup.
 
 End nzpordered_theory.
+Arguments ltr0n : clear implicits.
 Arguments ler_nat : clear implicits.
 Arguments ltr_nat : clear implicits.
 Arguments pnatr_eq0 : clear implicits.
 Arguments pchar_num : clear implicits.
 Arguments eqr_nat : clear implicits.
+Arguments natrG_neq0 R [gT] G.
 Arguments ltr01 {R}.
 #[global] Hint Extern 0 (is_true (@Order.lt ring_display _ _ _)) =>
   solve [apply: ltr01 | apply: ltr0Sn | apply: ltrN10] : core.
@@ -920,6 +924,8 @@ by rewrite subn_eq0 -ltnNge.
 Qed.
 
 End strictpordered_theory.
+
+Arguments exprn_gt0 : clear implicits.
 
 Section numring_theory.
 Context {R : numRingType}.
@@ -1784,6 +1790,9 @@ by rewrite mulrC ltr_pM2r ?subr_gt0.
 Qed.
 
 End numidomain_theory.
+
+Arguments invr_gt0 : clear implicits.
+Arguments lerM2r {R}.
 
 Section orderedidomain_theory.
 Context {R : orderedIdomainType}.
