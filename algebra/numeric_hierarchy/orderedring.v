@@ -928,7 +928,7 @@ Qed.
 
 End strictpordered_theory.
 
-Arguments exprn_gt0 [R].
+Arguments exprn_gt0 : clear implicits.
 
 Section numring_theory.
 Context {R : numRingType}.
