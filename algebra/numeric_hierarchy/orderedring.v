@@ -1434,7 +1434,10 @@ Context {R : numIdomainType}.
 Implicit Types x y : R.
 
 Lemma pmulr_rge0 x y : 0 < x -> (0 <= x * y) = (0 <= y).
-Admitted.
+Proof.
+rewrite !le_eqVlt => /[dup] x_gt0 /pmulr_rgt0 ->; congr orb.
+by rewrite !(eq_sym 0) mulrI_eq0 //; apply/lregP/lt0r_neq0.
+Qed.
 
 (* mulr and ler/ltr *)
 
