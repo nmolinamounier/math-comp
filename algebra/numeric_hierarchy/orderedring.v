@@ -200,7 +200,10 @@ HB.end.
 
 Module OrderedRingExports.
 Bind Scope ring_scope with
-  POrderRing.sort OrderRing.sort POrderedRing.sort OrderedRing.sort.
+  POrderRing.sort OrderRing.sort POrderedRing.sort POrderedNzRing.sort
+  OrderedRing.sort OrderedNzRing.sort StrictPOrderedRing.sort NumRing.sort
+  StrictOrderedRing.sort POrderedIntegralDomain.sort NumIntegralDomain.sort
+  OrderedIntegralDomain.sort.
 End OrderedRingExports.
 HB.export OrderedRingExports.
 
@@ -617,7 +620,7 @@ Proof. exact: num_real. Qed.
 Hint Resolve num_real : core.
 
 Arguments ler0n : clear implicits.
-
+Arguments exprn_ge0 [R].
 Arguments ler01 {R} : rename.
 Hint Extern 0 (is_true (@Order.le ring_display _ _ _)) =>
   solve [apply: ler01 | apply: ler0n | apply: lerN10] : core.
@@ -925,7 +928,7 @@ Qed.
 
 End strictpordered_theory.
 
-Arguments exprn_gt0 : clear implicits.
+Arguments exprn_gt0 [R].
 
 Section numring_theory.
 Context {R : numRingType}.
@@ -1439,6 +1442,9 @@ Section numidomain_theory.
 Context {R : numIdomainType}.
 Implicit Types x y : R.
 
+Definition invr_ge0 x := @invr_ge0 R x.
+Definition invr_gt0 x := @invr_gt0 R x.
+
 Lemma pmulr_rge0 x y : 0 < x -> (0 <= x * y) = (0 <= y).
 Proof.
 rewrite !le_eqVlt => /[dup] x_gt0 /pmulr_rgt0 ->; congr orb.
@@ -1543,15 +1549,6 @@ Lemma lerMn2r n x y : (x *+ n <= y *+ n) = ((n == 0) || (x <= y)).
 Proof. by case: n => [|n]; rewrite ?lexx ?eqxx // ler_pMn2r. Qed.
 
 (* ler and ^-1 *)
-
-Lemma invr_gt0 x : (0 < x^-1) = (0 < x).
-Proof.
-have [ux | nux] := boolP (x \is a GRing.unit); last by rewrite invr_out.
-by apply/idP/idP=> /ltr_pM2r <-; rewrite mul0r (mulrV, mulVr) ?ltr01.
-Qed.
-
-Lemma invr_ge0 x : (0 <= x^-1) = (0 <= x).
-Proof. by rewrite !le0r invr_gt0 invr_eq0. Qed.
 
 Lemma invr_lt0 x : (x^-1 < 0) = (x < 0).
 Proof. by rewrite -oppr_cp0 -invrN invr_gt0 oppr_cp0. Qed.
@@ -1791,7 +1788,8 @@ Qed.
 
 End numidomain_theory.
 
-Arguments invr_gt0 : clear implicits.
+Arguments invr_ge0 [R].
+Arguments invr_gt0 [R].
 Arguments lerMn2r {R}.
 
 Section orderedidomain_theory.
